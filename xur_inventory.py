@@ -1,8 +1,6 @@
 from enum import Enum
-from constants import *
-import requests
 from bs4 import BeautifulSoup
-import api
+from api import *
 
 KEYS = ['name', 'type', 'hash', 'damageType']
 
@@ -53,12 +51,12 @@ def items() -> dict:
         {class_type: {'name': 'item_name', 'type': 'item_type', 'hash': 'item_hash', 'damageType': 'damage_type'}}
     """
     inventory = {}
-    xur_items = api.public_vendor_items(XUR_HASH)
+    xur_items = public_vendor_items(XUR_HASH)
     count = 0
     for item in xur_items:  # For each item he's selling, find it's name, type, hash and class type
         item_hash = xur_items[item]['itemHash']  # current item hash
 
-        item_info = api.manifest(ITEM, item_hash)
+        item_info = manifest(ITEM, item_hash)
 
         name = item_info['displayProperties']['name']  # current item name
         class_type = (PlayerClass(item_info['classType'])).name  # current item class
