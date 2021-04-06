@@ -3,6 +3,7 @@
 /workspace.xml
 # Datasource local storage ignored files
 /../../../../../../:\Users\xlaki\PycharmProjects\xur_bot\.idea/dataSources/
+/../../../../../../:\Users\xlaki\PycharmProjects\xur_bot\.env
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/

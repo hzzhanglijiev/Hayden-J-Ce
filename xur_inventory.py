@@ -48,20 +48,20 @@ def items() -> dict:
     """Retrieve Xur's inventory
 
     :return: dict -
-        {class_type: {'name': 'item_name', 'type': 'item_type', 'hash': 'item_hash', 'damageType': 'damage_type'}}
+        {'class_type': {'name': 'item_name', 'type': 'item_type', 'hash': 'item_hash', 'damageType': 'damage_type'}}
     """
     inventory = {}
     xur_items = public_vendor_items(XUR_HASH)
     count = 0
     for item in xur_items:  # For each item he's selling, find it's name, type, hash and class type
         item_hash = xur_items[item]['itemHash']  # current item hash
-
-        item_info = manifest(ITEM, item_hash)
+        item_info = manifest(ITEM_DEF, item_hash)
 
         name = item_info['displayProperties']['name']  # current item name
         class_type = (PlayerClass(item_info['classType'])).name  # current item class
         item_type = item_info['itemTypeDisplayName']  # current item type
         damage_type = (DamageType(item_info['defaultDamageType'])).name
+
         item_dict = dict(zip(KEYS, [name, item_type, item_hash, damage_type]))  # create dictionary for current item
         inventory[class_type] = item_dict  # set key 'class type' to current dictionary inside the inventory dictionary
 
@@ -85,3 +85,5 @@ def location() -> str:
     xur_location.append(result.partition("This")[0].partition(" ")[2])
     xur_location.append("I am standing" + result.partition("standing")[2][:-1])
     return xur_location[1]
+
+items()

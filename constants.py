@@ -11,7 +11,7 @@ API_ROOT_PATH = 'https://www.bungie.net/Platform'
 HEADERS = {"X-API-Key": os.getenv('API_KEY')}
 
 # Definitions
-ITEM = 'DestinyInventoryItemDefinition'
+ITEM_DEF = 'DestinyInventoryItemDefinition'
 
 # Hashes
 XUR_HASH = '2190858386'
