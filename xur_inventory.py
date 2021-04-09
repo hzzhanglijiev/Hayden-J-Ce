@@ -25,7 +25,7 @@ class DamageType(Enum):
     RAID = 5
 
 
-class PlayerClass(Enum):  # Player class and weapon Enum for creating dictionary
+class PlayerClass(Enum):
     """Enumeration type defining each player class as described in the Destiny API
 
     **Titan** = 0
@@ -51,7 +51,7 @@ def items() -> dict:
         {'class_type': {'name': 'item_name', 'type': 'item_type', 'hash': 'item_hash', 'damageType': 'damage_type'}}
     """
     inventory = {}
-    xur_items = public_vendor_items(XUR_HASH)
+    xur_items = (public_vendor(XUR_HASH))['saleItems']
     count = 0
     for item in xur_items:  # For each item he's selling, find it's name, type, hash and class type
         item_hash = xur_items[item]['itemHash']  # current item hash
@@ -85,5 +85,3 @@ def location() -> str:
     xur_location.append(result.partition("This")[0].partition(" ")[2])
     xur_location.append("I am standing" + result.partition("standing")[2][:-1])
     return xur_location[1]
-
-items()

@@ -17,15 +17,15 @@ def manifest(entity_type: str, hash_identifier: int) -> dict:
     return (api_call.json())['Response']
 
 
-def public_vendor_items(vendor_hash: str) -> dict:
-    """Returns the inventory items of the requested vendor, see API documentation for more details:
+def public_vendor(vendor_hash: str) -> dict:
+    """Returns information on the requested vendor, see API documentation for more details:
         https://bungie-net.github.io/#Destiny2.GetPublicVendors
 
     :param vendor_hash: The hash identifier for the specific Vendor you want returned.
     :return: dict
     """
     api_call = requests.get(API_ROOT_PATH + '/Destiny2//Vendors/?components=402', headers=HEADERS)
-    return (api_call.json())['Response']['sales']['data'][vendor_hash]['saleItems']
+    return (api_call.json())['Response']['sales']['data'][vendor_hash]
 
 
 def search_entities(entity_type: str, search_term: str) -> dict:

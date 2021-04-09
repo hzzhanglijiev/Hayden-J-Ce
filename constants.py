@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 # API Documentation
-"""https://bungie-net.github.io/"""
+# (https://bungie-net.github.io/)
 
 # INIT
 API_ROOT_PATH = 'https://www.bungie.net/Platform'
