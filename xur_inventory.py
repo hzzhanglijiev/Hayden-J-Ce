@@ -52,8 +52,7 @@ def items() -> dict:
     """
     inventory = {}
     xur_items = (public_vendor(XUR_HASH))['saleItems']
-    count = 0
-    for item in xur_items:  # For each item he's selling, find it's name, type, hash and class type
+    for item, count in zip(xur_items, range(4)):  # For each item he's selling, find it's name, type, hash and class type
         item_hash = xur_items[item]['itemHash']  # current item hash
         item_info = manifest(ITEM_DEF, item_hash)
 
@@ -64,10 +63,6 @@ def items() -> dict:
 
         item_dict = dict(zip(KEYS, [name, item_type, item_hash, damage_type]))  # create dictionary for current item
         inventory[class_type] = item_dict  # set key 'class type' to current dictionary inside the inventory dictionary
-
-        if count == 3:
-            break
-        count += 1
 
     return inventory
 
@@ -85,3 +80,5 @@ def location() -> str:
     xur_location.append(result.partition("This")[0].partition(" ")[2])
     xur_location.append("I am standing" + result.partition("standing")[2][:-1])
     return xur_location[1]
+
+print(items())
