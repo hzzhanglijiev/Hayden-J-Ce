@@ -1,7 +1,11 @@
 from enum import Enum
 from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
+import pytz
 from api import *
 
+PST = pytz.timezone('US/Pacific')
+EST = pytz.timezone('US/Eastern')
 KEYS = ['name', 'type', 'hash', 'damageType']
 
 
@@ -51,8 +55,9 @@ def items() -> dict:
         {'class_type': {'name': 'item_name', 'type': 'item_type', 'hash': 'item_hash', 'damageType': 'damage_type'}}
     """
     inventory = {}
-    xur_items = (public_vendor(XUR_HASH))['saleItems']
-    for item, count in zip(xur_items, range(4)):  # For each item he's selling, find it's name, type, hash and class type
+    xur_items = (public_vendor(XUR_HASH, VendorSales))['saleItems']
+    for item, count in zip(xur_items,
+                           range(4)):  # For each item he's selling, find it's name, type, hash and class type
         item_hash = xur_items[item]['itemHash']  # current item hash
         item_info = manifest(ITEM_DEF, item_hash)
 
@@ -81,4 +86,10 @@ def location() -> str:
     xur_location.append("I am standing" + result.partition("standing")[2][:-1])
     return xur_location[1]
 
-print(items())
+
+def leaving_datetime():
+    bungie_time = datetime.strptime(((public_vendor(XUR_HASH, Vendors))['nextRefreshDate']), '%Y-%m-%dT%H:%M:%SZ')
+    bungie_time = PST.localize(bungie_time)
+    eastern_time = bungie_time.astimezone(EST)
+    time_until_return = eastern_time - datetime.now().astimezone(EST) - timedelta(3)
+    return (str(time_until_return))[:-10].replace(':', ' hours, and ') + ' minutes'

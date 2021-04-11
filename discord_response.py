@@ -48,10 +48,10 @@ def message():
         )
         embed.clear_fields()
         inventory = xur_inventory.items()
-        weapon_emoji = Emoji[inventory['Weapon']['damageType']].value
         embed.set_thumbnail(url='https://warmind.io/static/img/xur_icon.png')
         embed.add_field(name="**Location**", value=xur_inventory.location(), inline=False)
-        embed.add_field(name=weapon_emoji + " **Weapon**", value=hyperlink(inventory['Weapon']), inline=True)
+        embed.add_field(name=Emoji[inventory['Weapon']['damageType']].value + " **Weapon**",
+                        value=hyperlink(inventory['Weapon']), inline=True)
         embed.add_field(name="\u200b", value="\u200b", inline=True)
         embed.add_field(name="\u200b", value=inventory['Weapon']['type'], inline=True)
         embed.add_field(name=Emoji.TITAN.value + " **Titan**", value=hyperlink(inventory['Titan']), inline=True)
@@ -63,6 +63,7 @@ def message():
         embed.add_field(name=Emoji.WARLOCK.value + " **Warlock**", value=hyperlink(inventory['Warlock']), inline=True)
         embed.add_field(name="\u200b", value="\u200b", inline=True)
         embed.add_field(name="\u200b", value=inventory['Warlock']['type'], inline=True)
+        embed.set_footer(text='I will be leaving in ' + xur_inventory.leaving_datetime())
         embedded = True
         return embed
     except:

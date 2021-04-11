@@ -17,15 +17,24 @@ def manifest(entity_type: str, hash_identifier: int) -> dict:
     return (api_call.json())['Response']
 
 
-def public_vendor(vendor_hash: str) -> dict:
+def public_vendor(vendor_hash: str, components: int) -> dict:
     """Returns information on the requested vendor, see API documentation for more details:
         https://bungie-net.github.io/#Destiny2.GetPublicVendors
 
     :param vendor_hash: The hash identifier for the specific Vendor you want returned.
+    :param components: See constants.py/Components
     :return: dict
     """
-    api_call = requests.get(API_ROOT_PATH + '/Destiny2//Vendors/?components=402', headers=HEADERS)
-    return (api_call.json())['Response']['sales']['data'][vendor_hash]
+    api_call = requests.get(API_ROOT_PATH + '/Destiny2//Vendors/?components=' + str(components), headers=HEADERS)
+    if components is Vendors:
+        response = (api_call.json())['Response']['vendors']['data'][vendor_hash]
+    elif components is VendorSales:
+        response = (api_call.json())['Response']['sales']['data'][vendor_hash]
+    elif components is VendorCategories:
+        response = (api_call.json())['Response']['categories']['data'][vendor_hash]
+    else:
+        response = (api_call.json())['Response']
+    return response
 
 
 def search_entities(entity_type: str, search_term: str) -> dict:
