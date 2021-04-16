@@ -88,8 +88,11 @@ def location() -> str:
 
 
 def leaving_datetime():
-    bungie_time = datetime.strptime(((public_vendor(XUR_HASH, Vendors))['nextRefreshDate']), '%Y-%m-%dT%H:%M:%SZ')
-    bungie_time = PST.localize(bungie_time)
-    eastern_time = bungie_time.astimezone(EST)
-    time_until_return = eastern_time - datetime.now().astimezone(EST) - timedelta(3)
-    return (str(time_until_return))[:-10].replace(':', ' hours, and ') + ' minutes'
+    try:
+        bungie_time = datetime.strptime(((public_vendor(XUR_HASH, Vendors))['nextRefreshDate']), '%Y-%m-%dT%H:%M:%SZ')
+        bungie_time = PST.localize(bungie_time)
+        eastern_time = bungie_time.astimezone(EST)
+        time_until_return = eastern_time - datetime.now().astimezone(EST) - timedelta(3)
+        return (str(time_until_return))[:-10].replace(':', ' hours, and ') + ' minutes'
+    except:
+        return ''
