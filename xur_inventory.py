@@ -77,14 +77,9 @@ def location() -> str:
 
     :return: str
     """
-    xur_location = []
-    URL = 'https://xur.wiki/'
-    page = requests.get(URL)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    result = soup.find(class_="location-text-container").get_text()  # Find's Xur's latest location
-    xur_location.append(result.partition("This")[0].partition(" ")[2])
-    xur_location.append("I am standing" + result.partition("standing")[2][:-1])
-    return xur_location[1]
+    page = requests.get(LOCATION_ROOT_PATH)
+    json = page.json()
+    return json['locationName']
 
 
 def leaving_datetime():

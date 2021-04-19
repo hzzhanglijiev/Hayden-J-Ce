@@ -22,16 +22,6 @@ async def inv(ctx):
         await ctx.send(message)
 
 
-def is_me(ctx):
-    return ctx.author.id == 385083519325569026
-
-
-@client.command()
-@commands.check(is_me)
-async def clear(ctx):
-    await ctx.channel.purge()
-
-
 @client.event
 async def on_ready():
     print(f'{client.user.name} has connected to Discord!')

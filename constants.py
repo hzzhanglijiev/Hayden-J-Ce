@@ -8,6 +8,7 @@ load_dotenv()
 
 # INIT
 API_ROOT_PATH = 'https://www.bungie.net/Platform'
+LOCATION_ROOT_PATH = 'https://paracausal.science/xur/current.json'   # credit to to @nev_rtheless
 HEADERS = {"X-API-Key": os.getenv('API_KEY')}
 
 # Definitions
