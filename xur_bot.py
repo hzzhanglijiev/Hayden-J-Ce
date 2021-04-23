@@ -1,9 +1,11 @@
 import os
 import random
+
 import discord
-import discord_response
-from dotenv import load_dotenv
 from discord.ext import commands
+from dotenv import load_dotenv
+from better_profanity import profanity
+import discord_response
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -56,8 +58,7 @@ async def on_message(message):
         await message.channel.send(response)
 
     elif (
-            (message.content.lower() == 'fuck') |
-            (message.content.lower() == 'shit') |
+            (profanity.contains_profanity(message.content)) |
             (message.content.lower() == 'i\'m salty') |
             (message.content.lower() == 'im salty') |
             (message.content.lower() == 'i am salty')
