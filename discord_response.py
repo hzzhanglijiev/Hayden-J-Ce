@@ -1,15 +1,23 @@
 from enum import Enum
+import datetime as DT
+import time
 
+import dateutil.relativedelta as REL
 import discord
-
+from timeit import repeat
 import xur_inventory
 
 DESTINY_TRACKER = "https://destinytracker.com/destiny-2/db/items/"
 
 embedded: bool = False
 
+cache_check = None
+cached_message = None
+
 
 class Emoji(Enum):
+    """Enumeration type mapping each DamageType to the appropriate Emoji
+    """
     NONE = ''
     KINETIC = '<:kinetic:773719907371450379>'
     RAID = ''
@@ -37,9 +45,26 @@ def hyperlink(item: dict) -> str:
 def message():
     """Creates an Embed that contains Xur's inventory, or a generic response if Xur is not available
 
-    :return: string or Embed
+    :return: string or discord.Embed
     """
     global embedded
+    global cache_check
+    global cached_message
+    leaving_time, next_refresh = xur_inventory.leaving_datetime()
+
+    today = DT.date.today()
+    next_friday = today + REL.relativedelta(weekday=REL.FR)
+    curr_time = time.localtime().tm_hour
+
+    if leaving_time.total_seconds() < 0 or (today == next_friday and curr_time < 12):
+        embedded = False
+        cached_message = "*I will return on Friday guardian*\n Try again on " + next_friday.strftime(
+            "%B, %d %Y") + " at 12pm EST"
+        return cached_message
+
+    if next_refresh == cache_check and embedded:
+        return cached_message
+
     try:
         embed = discord.Embed(
             title="Xûr, Agent of the Nine",
@@ -63,9 +88,18 @@ def message():
         embed.add_field(name=Emoji.WARLOCK.value + " **Warlock**", value=hyperlink(inventory['Warlock']), inline=True)
         embed.add_field(name="\u200b", value="\u200b", inline=True)
         embed.add_field(name="\u200b", value=inventory['Warlock']['type'], inline=True)
-        embed.set_footer(text='I will be leaving in ' + xur_inventory.leaving_datetime())
+        embed.set_footer(
+            text='I will be leaving in ' + str(leaving_time)[:-10].replace(':', ' hours, and ') + ' minutes')
         embedded = True
-        return embed
+        cache_check = next_refresh
+        cached_message = embed
+        return cached_message
     except:
         embedded = False
-        return "*I will return on Friday guardian*"
+        return "*I will return on Friday guardian*\n Try again on " + next_friday.strftime("%B, %d %Y") + " at 12pm EST"
+
+
+# setup_code = "from discord_response import message"
+# stmt = "message()"
+# times = repeat(setup=setup_code, stmt=stmt, repeat=3, number=10)
+# print(f"Minimum execution time: {min(times)}")

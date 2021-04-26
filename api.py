@@ -1,6 +1,6 @@
 import requests
 
-from constants import *
+from constants import API_ROOT_PATH, HEADERS, Vendors, VendorSales, VendorCategories
 
 
 def manifest(entity_type: str, hash_identifier: int) -> dict:

@@ -1,11 +1,17 @@
 import os
 import random
-
+from datetime import datetime
+import better_profanity
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from better_profanity import profanity
+
 import discord_response
+from xur_quotes import who_is_xur, who_are_the_nine, bad_word, bad_word_at_xur
+
+regular_profanity = better_profanity.Profanity()
+hate_speech_check = better_profanity.Profanity()
+hate_speech_check.load_censor_words_from_file('hate_speech.txt')
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -16,6 +22,8 @@ client = commands.Bot(command_prefix="!")
 
 @client.command()
 async def inv(ctx):
+    # Sends an embedded message containing Xur's current inventory, or if he
+    # is not currently present, returns a message telling the user when he'll arrive next
     await client.wait_until_ready()
     message = discord_response.message()
     if discord_response.embedded:
@@ -25,54 +33,45 @@ async def inv(ctx):
 
 
 @client.event
-async def on_ready():
+async def on_ready():  # Confirmation in the terminal to let you know the bot has activated successfully
     print(f'{client.user.name} has connected to Discord!')
 
 
 @client.event
 async def on_message(message):
+    # if the message is from xur_bot, ignore it
     if message.author == client.user:
         return
-
-    xur_quotes = [
-        '*I am an Agent of the Nine.*',
-        '*I am only an Agent. The Nine rule beyond the Jovians*',
-        '*I am merely a trash collector for the Nine.*'
-    ]
-
-    xur_badword = [
-        '**Guardian!**',
-        '**You must stop eating salted popcorn**'
-    ]
-
-    xur_nine = [
-        ('*I cannot explain what the Nine are. They are... very large.* '
-         '*I cannot explain. The fault is mine, not yours.*'),
-    ]
-
+    # Check what kind of message it is
     if (
-            (message.content.lower() == 'who is xur') |
-            (message.content.lower() == 'what is xur')
+            ('who is xur' in message.content.lower()) |
+            ('what is xur' in message.content.lower())
     ):
-        response = random.choice(xur_quotes)
+        response = random.choice(who_is_xur)
+        await message.channel.send(response)
+    elif hate_speech_check.contains_profanity(message.content):
+        await message.channel.purge(limit=1)
+
+    elif (
+            (regular_profanity.contains_profanity(message.content)) |
+            ('i\'m salty' in message.content.lower()) |
+            ('im salty' in message.content.lower()) |
+            ('i am salty' in message.content.lower())
+    ):
+        if 'xur' in message.content.lower():
+            await message.add_reaction('<:Uldren_Thumbs_Down:769642874593345586>')
+            response = random.choice(bad_word_at_xur)
+        else:
+            response = random.choice(bad_word)
         await message.channel.send(response)
 
     elif (
-            (profanity.contains_profanity(message.content)) |
-            (message.content.lower() == 'i\'m salty') |
-            (message.content.lower() == 'im salty') |
-            (message.content.lower() == 'i am salty')
+            ('who are the nine' in message.content.lower()) |
+            ('what are the nine' in message.content.lower()) |
+            ('who is the nine' in message.content.lower()) |
+            ('what is the nine' in message.content.lower())
     ):
-        response = random.choice(xur_badword)
-        await message.channel.send(response)
-
-    elif (
-            (message.content.lower() == 'who are the nine') |
-            (message.content.lower() == 'what are the nine') |
-            (message.content.lower() == 'who is the nine') |
-            (message.content.lower() == 'what is the nine')
-    ):
-        response = random.choice(xur_nine)
+        response = random.choice(who_are_the_nine)
         await message.channel.send(response)
 
     elif (
@@ -87,7 +86,8 @@ async def on_message(message):
 async def on_error(event, *args, **kwargs):
     with open('err.log', 'a') as f:
         if event == 'on_message':
-            f.write(f'Unhandled message: {args[0]}\n')
+            message = args[0]
+            f.write(f'\nERROR on {datetime.now().strftime("%m/%d/%Y at %H:%M:%S")}\nServer: {message.guild}\nChannel: {message.channel}\nUser: {message.author}\nUnhandled message: {message.content}\n')
         else:
             raise
 
