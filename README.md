@@ -39,3 +39,4 @@ Currently, Xûr Bot only supports one command:
     If Xûr Bot reads a message that should be understood, but causes an error, the server, channel, author, and message contents will be logged in the err.log file:
     <br></br>
     ![errorlog](images/errorlog.png)
+  
