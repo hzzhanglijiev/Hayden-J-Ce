@@ -5,8 +5,7 @@ import better_profanity
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-
-import discord_response
+from Vendor import Vendor
 from xur_quotes import who_is_xur, who_are_the_nine, bad_word, bad_word_at_xur
 
 regular_profanity = better_profanity.Profanity()
@@ -16,7 +15,8 @@ hate_speech_check.load_censor_words_from_file('hate_speech.txt')
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
-
+Xur = Vendor(name='Xur')
+Zavala = Vendor(name='COMMANDER_ZAVALA')
 client = commands.Bot(command_prefix="!")
 
 
@@ -25,11 +25,19 @@ async def inv(ctx):
     # Sends an embedded message containing Xur's current inventory, or if he
     # is not currently present, returns a message telling the user when he'll arrive next
     await client.wait_until_ready()
-    message = discord_response.message()
-    if discord_response.embedded:
+    message = Xur.message()
+    if Xur.embedded:
         await ctx.send(embed=message)
     else:
         await ctx.send(message)
+
+
+@client.command()
+async def bounties(ctx):
+    # Sends an embedded message containing Xur's current inventory, or if he
+    # is not currently present, returns a message telling the user when he'll arrive next
+    await client.wait_until_ready()
+    await ctx.send(embed=Zavala.message())
 
 
 @client.event
@@ -87,7 +95,8 @@ async def on_error(event, *args, **kwargs):
     with open('err.log', 'a') as f:
         if event == 'on_message':
             message = args[0]
-            f.write(f'\nERROR on {datetime.now().strftime("%m/%d/%Y at %H:%M:%S")}\nServer: {message.guild}\nChannel: {message.channel}\nUser: {message.author}\nUnhandled message: {message.content}\n')
+            f.write(
+                f'\nERROR on {datetime.now().strftime("%m/%d/%Y at %H:%M:%S")}\nServer: {message.guild}\nChannel: {message.channel}\nUser: {message.author}\nUnhandled message: {message.content}\n')
         else:
             raise
 
