@@ -16,12 +16,11 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 Xur = Vendor(name='Xur')
-Zavala = Vendor(name='COMMANDER_ZAVALA')
 client = commands.Bot(command_prefix="!")
 
 
 @client.command()
-async def inv(ctx):
+async def xur(ctx):
     # Sends an embedded message containing Xur's current inventory, or if he
     # is not currently present, returns a message telling the user when he'll arrive next
     await client.wait_until_ready()
@@ -33,11 +32,16 @@ async def inv(ctx):
 
 
 @client.command()
-async def bounties(ctx):
+async def bounties(ctx, name: str):
     # Sends an embedded message containing Xur's current inventory, or if he
     # is not currently present, returns a message telling the user when he'll arrive next
-    await client.wait_until_ready()
-    await ctx.send(embed=Zavala.message())
+    try:
+        vendor = Vendor(name=name)
+        await client.wait_until_ready()
+        await ctx.send(embed=vendor.message())
+    except RuntimeError:
+        await client.wait_until_ready()
+        await ctx.send("That vendor does not exist in my files")
 
 
 @client.event

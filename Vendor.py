@@ -30,7 +30,8 @@ class Vendor:
 
         :param name: The name of the vendor you want to create
         """
-        if name.upper() == 'XUR':
+        name = name.upper()
+        if name == 'XUR':
             return Xur(name=name)
         else:
             return RegularVendor(name=name)
@@ -42,7 +43,13 @@ class RegularVendor:
 
         :param name: The name of the vendor you want to create
         """
-        self.hash_id = (VendorHash[name.upper()])
+        try:
+            self.hash_id = (VendorHash[name])
+        except KeyError:
+            self.hash_id = next((vendor for vendor in VendorHash if 'ZAVALA' in vendor.name), None)
+            if self.hash_id is None:
+                raise RuntimeError
+
         displayProperties = bungie_api.manifest((Definitions['VENDOR']).value, self.hash_id.value)[
             'displayProperties']
         self.name = displayProperties['name']
