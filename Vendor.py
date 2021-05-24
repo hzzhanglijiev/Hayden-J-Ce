@@ -46,7 +46,7 @@ class RegularVendor:
         try:
             self.hash_id = (VendorHash[name])
         except KeyError:
-            self.hash_id = next((vendor for vendor in VendorHash if 'ZAVALA' in vendor.name), None)
+            self.hash_id = next((vendor for vendor in VendorHash if name in vendor.name), None)
             if self.hash_id is None:
                 raise RuntimeError
 
