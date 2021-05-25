@@ -39,7 +39,7 @@ async def bounties(ctx, name: str):
         vendor = Vendor(name=name)
         await client.wait_until_ready()
         await ctx.send(embed=vendor.message())
-    except RuntimeError:
+    except (RuntimeError, AttributeError):
         await client.wait_until_ready()
         await ctx.send("That vendor does not exist in my files")
 
