@@ -2,7 +2,6 @@ import os
 import random
 from datetime import datetime
 import better_profanity
-import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from Vendor import Vendor
@@ -32,9 +31,9 @@ async def xur(ctx):
 
 
 @client.command()
-async def bounties(ctx, name: str):
-    # Sends an embedded message containing Xur's current inventory, or if he
-    # is not currently present, returns a message telling the user when he'll arrive next
+async def bounties(ctx, name: str):  # Currently still being tested
+    # Sends an embedded message containing the requested vendor's bounties. If they
+    # are not currently present or the user requests a unidentifiable vendor, sends a informational message
     try:
         vendor = Vendor(name=name)
         await client.wait_until_ready()
@@ -85,11 +84,6 @@ async def on_message(message):
     ):
         response = random.choice(who_are_the_nine)
         await message.channel.send(response)
-
-    elif (
-            message.content == 'raise-exception'
-    ):
-        raise discord.DiscordException
 
     await client.process_commands(message)
 

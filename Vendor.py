@@ -66,30 +66,39 @@ class RegularVendor:
         return embed
 
     def message(self):
+        """Creates an Embed that contains the vendors current bounties, or a generic response if they are not available
+
+        :return: string or discord.Embed
+        """
         weekly_bounties, daily_bounties = self.items()
         try:
             embed = self.create_embed_title()
             embed.clear_fields()
             embed.set_thumbnail(url='https://www.bungie.net/' + self.icon)
-            embed.add_field(name="**Weekly Bounties**",
-                            value=f'\u200b \n> **{weekly_bounties[0]["name"]}** \n '
-                                  f'> ```{weekly_bounties[0]["description"]}```\n '
-                                  f'\n'
-                                  f'> **{weekly_bounties[1]["name"]}**\n '
-                                  f'> ```{weekly_bounties[1]["description"]}```\n \u200b', inline=False)
-            embed.add_field(name="**Daily Bounties**",
-                            value=f'\u200b \n> **{daily_bounties[0]["name"]}**\n '
-                                  f'> ```{daily_bounties[0]["description"]}```\n '
-                                  f'\n'
-                                  f'> **{daily_bounties[1]["name"]}**\n '
-                                  f'> ```{daily_bounties[1]["description"]}```\n '
-                                  f'\n'
-                                  f'> **{daily_bounties[2]["name"]}**\n '
-                                  f'> ```{daily_bounties[2]["description"]}```\n '
-                                  f'\n'
-                                  f'> **{daily_bounties[3]["name"]}**\n '
-                                  f'> ```{daily_bounties[3]["description"]}```',
-                            inline=False)
+
+            name = "**Weekly Bounties**"
+            weekly = f'\u200b \n'
+            if weekly_bounties:
+                for bounty in weekly_bounties:
+                    weekly += f'> **{bounty["name"]}**\n > ```{bounty["description"]}```\n ' + f'\n'
+                    if len(weekly) > 950:
+                        embed.add_field(name=name,
+                                        value=weekly,
+                                        inline=False)
+                        name = '\u200b'
+                        weekly = ''
+                embed.add_field(name=name,
+                                value=weekly,
+                                inline=False)
+
+            daily = f'\u200b \n'
+            if daily_bounties:
+                for bounty in daily_bounties:
+                    daily += f'> **{bounty["name"]}**\n > ```{bounty["description"]}```\n ' + f'\n'
+
+                embed.add_field(name="**Daily Bounties**",
+                                value=daily,
+                                inline=False)
             return embed
         except:
             return "Error, Unable to retrieve bounties"
@@ -98,11 +107,11 @@ class RegularVendor:
         daily_bounties = []
         weekly_bounties = []
         vendor = bungie_api.get_vendor(membership_type=MembershipType.STEAM, membership_id=4611686018475645094,
-                                            character_id=2305843009349174049, vendor_hash=self.hash_id,
-                                            components=Components.VendorSales)
+                                       character_id=2305843009349174049, vendor_hash=self.hash_id,
+                                       components=Components.VendorSales)
         items = vendor['sales']['data']
         items = list(items.values())
-        for item in items[-6:]:
+        for item in items:
             hash_id = item['itemHash']
             bounty = bungie_api.manifest((Definitions['ITEM']).value, hash_id)
             bounty_type = bounty['itemTypeDisplayName']
