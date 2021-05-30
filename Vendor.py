@@ -33,6 +33,8 @@ class Vendor:
         name = name.upper()
         if name == 'XUR':
             return Xur(name=name)
+        elif name == "ERIS":
+            return RegularVendor(name="ERIS_MORN")
         else:
             return RegularVendor(name=name)
 
@@ -47,7 +49,7 @@ class RegularVendor:
             self.hash_id = (VendorHash[name])
         except KeyError:
             self.hash_id = next((vendor for vendor in VendorHash if name in vendor.name), None)
-            if self.hash_id is None:
+            if self.hash_id is None or self.hash_id is VendorHash.TESS_EVERIS:
                 raise RuntimeError
 
         displayProperties = bungie_api.manifest((Definitions['VENDOR']).value, self.hash_id.value)[
@@ -55,7 +57,7 @@ class RegularVendor:
         self.name = displayProperties['name']
         self.subtitle = displayProperties['subtitle']
         self.description = displayProperties['description']
-        self.icon = displayProperties['originalIcon']
+        self.icon = displayProperties['smallTransparentIcon']
 
     def create_embed_title(self):
         embed = discord.Embed(
@@ -71,37 +73,22 @@ class RegularVendor:
         :return: string or discord.Embed
         """
         weekly_bounties, daily_bounties = self.items()
-        try:
-            embed = self.create_embed_title()
-            embed.clear_fields()
-            embed.set_thumbnail(url='https://www.bungie.net/' + self.icon)
-
-            name = "**Weekly Bounties**"
-            weekly = f'\u200b \n'
-            if weekly_bounties:
-                for bounty in weekly_bounties:
-                    weekly += f'> **{bounty["name"]}**\n > ```{bounty["description"]}```\n ' + f'\n'
-                    if len(weekly) > 950:
-                        embed.add_field(name=name,
-                                        value=weekly,
-                                        inline=False)
-                        name = '\u200b'
-                        weekly = ''
-                embed.add_field(name=name,
-                                value=weekly,
-                                inline=False)
-
-            daily = f'\u200b \n'
-            if daily_bounties:
-                for bounty in daily_bounties:
-                    daily += f'> **{bounty["name"]}**\n > ```{bounty["description"]}```\n ' + f'\n'
-
-                embed.add_field(name="**Daily Bounties**",
-                                value=daily,
-                                inline=False)
-            return embed
-        except:
-            return "Error, Unable to retrieve bounties"
+        embed = self.create_embed_title()
+        embed.clear_fields()
+        embed.set_thumbnail(url='https://www.bungie.net/' + self.icon)
+        if weekly_bounties:  # if any weekly bounties exist
+            for bounty in weekly_bounties:
+                embed.add_field(name=f'**{bounty["name"]}**', value=bounty['description'], inline=True)
+                embed.add_field(name="\u200b", value="\u200b", inline=True)
+                embed.add_field(name="\u200b", value="\nWeekly Bounty\n", inline=True)
+        if daily_bounties:  # if any daily bounties exist
+            for bounty in daily_bounties:
+                embed.add_field(name=f'**{bounty["name"]}**', value=bounty['description'], inline=True)
+                embed.add_field(name="\u200b", value="\u200b", inline=True)
+                embed.add_field(name="\u200b", value="\nDaily Bounty\n", inline=True)
+        if not daily_bounties and not weekly_bounties:
+            raise RuntimeError
+        return embed
 
     def items(self):
         daily_bounties = []
@@ -120,9 +107,9 @@ class RegularVendor:
                 'name': displayProperties['name'],
                 'description': displayProperties['description']
             }
-            if bounty_type == "Daily Bounty":
+            if bounty_type == "Daily Bounty" or bounty_type == "Daily Trials Bounty":
                 daily_bounties.append(bounty_dict)
-            if bounty_type == "Weekly Bounty":
+            if bounty_type == "Weekly Bounty" or bounty_type == "Weekly Trials Bounty":
                 weekly_bounties.append(bounty_dict)
         return weekly_bounties, daily_bounties
 
