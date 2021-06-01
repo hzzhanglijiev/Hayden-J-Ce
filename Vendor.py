@@ -169,7 +169,7 @@ class Xur(RegularVendor):
             self.cache_check = next_refresh
             self.cached_message = embed
             return self.cached_message
-        except:
+        except KeyError:
             self.embedded = False
             return "*I will return on Friday guardian*\nTry again on " + next_friday.strftime(
                 "%B, %d %Y") + " at 12pm EST"
