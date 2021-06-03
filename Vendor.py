@@ -4,14 +4,10 @@ import time
 import dateutil.relativedelta as REL
 import os
 import discord
-import pytz
 import requests
 from helpers import hyperlink, Emoji
 from pybungie import BungieAPI, VendorHash, Definitions, Components, MembershipType, PlayerClass, DamageType
 
-PST = pytz.timezone('US/Pacific')
-EST = pytz.timezone('US/Eastern')
-KEYS = ['name', 'type', 'hash', 'damageType']
 LOCATION_ROOT_PATH = 'https://paracausal.science/xur/current.json'  # credit to to @nev_rtheless
 bungie_api = BungieAPI(api_key=os.getenv("API_KEY"))
 bungie_api.input_xbox_credentials(xbox_live_email=os.getenv("XBOX_LIVE_EMAIL"),
@@ -52,12 +48,14 @@ class RegularVendor:
             if self.hash_id is None or self.hash_id is VendorHash.TESS_EVERIS:
                 raise RuntimeError
 
-        displayProperties = bungie_api.manifest((Definitions['VENDOR']).value, self.hash_id.value)[
-            'displayProperties']
+        displayProperties = bungie_api.manifest((Definitions['VENDOR']).value, self.hash_id.value)['displayProperties']
         self.name = displayProperties['name']
         self.subtitle = displayProperties['subtitle']
         self.description = displayProperties['description']
         self.icon = displayProperties['smallTransparentIcon']
+        self.days_between_refresh = 1
+        self.cache_check = None
+        self.cached_message = None
 
     def create_embed_title(self):
         embed = discord.Embed(
@@ -72,6 +70,10 @@ class RegularVendor:
 
         :return: string or discord.Embed
         """
+        next_refresh = self.get_next_refresh()
+        if next_refresh == self.cache_check:
+            return self.cached_message
+
         weekly_bounties, daily_bounties = self.items()
         embed = self.create_embed_title()
         embed.clear_fields()
@@ -88,13 +90,17 @@ class RegularVendor:
                 embed.add_field(name="\u200b", value="\nDaily Bounty\n", inline=True)
         if not daily_bounties and not weekly_bounties:
             raise RuntimeError
-        return embed
+        self.cached_message = embed
+        self.cache_check = next_refresh
+        return self.cached_message
+
 
     def items(self):
         daily_bounties = []
         weekly_bounties = []
-        vendor = bungie_api.get_vendor(membership_type=MembershipType.STEAM, membership_id=4611686018475645094,
-                                       character_id=2305843009349174049, vendor_hash=self.hash_id,
+        vendor = bungie_api.get_vendor(membership_type=MembershipType.STEAM,
+                                       membership_id=int(os.getenv("MEMBERSHIP_ID")),
+                                       character_id=int(os.getenv("CHARACTER_ID")), vendor_hash=self.hash_id,
                                        components=Components.VendorSales)
         items = vendor['sales']['data']
         items = list(items.values())
@@ -113,20 +119,39 @@ class RegularVendor:
                 weekly_bounties.append(bounty_dict)
         return weekly_bounties, daily_bounties
 
+    def get_next_refresh(self) -> [datetime, str]:
+        """Returns Vendors next refresh date, or empty string
+
+        :return: datetime or str
+        """
+        try:
+            next_refresh_date = datetime.strptime(
+                (bungie_api.get_vendor(membership_type=MembershipType.STEAM,
+                                       membership_id=int(os.getenv("MEMBERSHIP_ID")),
+                                       character_id=int(os.getenv("CHARACTER_ID")), vendor_hash=self.hash_id,
+                                       components=Components.Vendors)['vendor']['data']['nextRefreshDate']),
+                '%Y-%m-%dT%H:%M:%SZ')
+            return next_refresh_date
+        except:
+            return ''
+
+    def get_time_until_refresh(self, next_refresh: datetime) -> timedelta:
+        return next_refresh - timedelta(days=self.days_between_refresh, hours=-3) - datetime.now()
+
 
 class Xur(RegularVendor):
     def __init__(self, name: str):
         super().__init__(name)
+        self.days_between_refresh = 3
         self.embedded = False
-        self.cache_check = None
-        self.cached_message = None
 
     def message(self):
         """Creates an Embed that contains Xur's inventory, or a generic response if Xur is not available
 
         :return: string or discord.Embed
         """
-        leaving_time, next_refresh = self.leaving_datetime()
+        next_refresh = self.get_next_refresh()
+        leaving_time = self.get_time_until_refresh(next_refresh=next_refresh)
 
         today = DT.date.today()
         next_friday = today + REL.relativedelta(weekday=REL.FR)
@@ -215,20 +240,3 @@ class Xur(RegularVendor):
         page = requests.get(LOCATION_ROOT_PATH)
         json = page.json()
         return json['locationName']
-
-    def leaving_datetime(self) -> [(timedelta, datetime), str]:
-        """Returns Xur's leaving time and next refresh date, or empty string
-
-        :return: (timedelta, datetime) or str
-        """
-        try:
-            next_refresh_date = datetime.strptime(
-                (bungie_api.get_public_vendors(components=Components.Vendors)['vendors']['data'][
-                    str(self.hash_id.value)]['nextRefreshDate']),
-                '%Y-%m-%dT%H:%M:%SZ')
-            bungie_time = PST.localize(next_refresh_date)
-            eastern_time = bungie_time.astimezone(EST)
-            time_until_return = eastern_time - datetime.now().astimezone(EST) - timedelta(3)
-            return time_until_return, next_refresh_date
-        except:
-            return ''

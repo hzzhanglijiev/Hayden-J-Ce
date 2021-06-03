@@ -15,6 +15,7 @@ class Emoji(Enum):
     VOID = '<:void:773391417879298058>'
     SOLAR = '<:solar:773391417446891521>'
     ARC = '<:arc:773391417438765057>'
+    ULDREN_THUMBS_DOWN = '<:Uldren_Thumbs_Down:769642874593345586>'
 
 
 def hyperlink(item: dict) -> str:

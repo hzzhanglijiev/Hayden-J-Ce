@@ -6,6 +6,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from Vendor import Vendor
 from xur_quotes import who_is_xur, who_are_the_nine, bad_word, bad_word_at_xur
+from helpers import Emoji
 
 regular_profanity = better_profanity.Profanity()
 hate_speech_check = better_profanity.Profanity()
@@ -40,7 +41,7 @@ async def bounties(ctx, name: str):  # Currently still being tested
         await ctx.send(embed=vendor.message())
     except (RuntimeError, AttributeError):
         await client.wait_until_ready()
-        await ctx.send("That vendor does not exist in my files")
+        await ctx.send("That vendor does not exist in my files or doesn't sell bounties")
 
 
 @client.event
@@ -70,7 +71,7 @@ async def on_message(message):
             ('i am salty' in message.content.lower())
     ):
         if 'xur' in message.content.lower():
-            await message.add_reaction('<:Uldren_Thumbs_Down:769642874593345586>')
+            await message.add_reaction(emoji=Emoji.ULDREN_THUMBS_DOWN.value)
             response = random.choice(bad_word_at_xur)
         else:
             response = random.choice(bad_word)
