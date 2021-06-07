@@ -29,8 +29,6 @@ class Vendor:
         name = name.upper()
         if name == 'XUR':
             return Xur(name=name)
-        elif name == "ERIS":
-            return RegularVendor(name="ERIS_MORN")
         else:
             return RegularVendor(name=name)
 
@@ -93,7 +91,6 @@ class RegularVendor:
         self.cached_message = embed
         self.cache_check = next_refresh
         return self.cached_message
-
 
     def items(self):
         daily_bounties = []
@@ -240,3 +237,4 @@ class Xur(RegularVendor):
         page = requests.get(LOCATION_ROOT_PATH)
         json = page.json()
         return json['locationName']
+
