@@ -5,6 +5,7 @@ import better_profanity
 from discord.ext import commands
 from dotenv import load_dotenv
 from Vendor import Vendor
+from VendorDictionary import VendorDictionary
 from xur_quotes import who_is_xur, who_are_the_nine, bad_word, bad_word_at_xur
 from helpers import Emoji
 
@@ -16,6 +17,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 Xur = Vendor(name='Xur')
+Vendor_Dictionary = VendorDictionary()
 client = commands.Bot(command_prefix="!")
 
 
@@ -36,7 +38,7 @@ async def bounties(ctx, name: str):  # Currently still being tested
     # Sends an embedded message containing the requested vendor's bounties. If they
     # are not currently present or the user requests a unidentifiable vendor, sends a informational message
     try:
-        vendor = Vendor(name=name)
+        vendor = Vendor_Dictionary.search(name=name)
         await client.wait_until_ready()
         await ctx.send(embed=vendor.message())
     except (RuntimeError, AttributeError):

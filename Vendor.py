@@ -37,12 +37,12 @@ class RegularVendor:
     def __init__(self, name: str):
         """Standard class for non-Xur vendors in Destiny 2
 
-        :param name: The name of the vendor you want to create
+        :param name: The name of the curr_vendor you want to create
         """
         try:
             self.hash_id = (VendorHash[name])
         except KeyError:
-            self.hash_id = next((vendor for vendor in VendorHash if name in vendor.name), None)
+            self.hash_id = next((curr_vendor for curr_vendor in VendorHash if name in curr_vendor.name), None)
             if self.hash_id is None or self.hash_id is VendorHash.TESS_EVERIS:
                 raise RuntimeError
 
@@ -68,7 +68,8 @@ class RegularVendor:
 
         :return: string or discord.Embed
         """
-        next_refresh = self.get_next_refresh()
+        today = DT.date.today()
+        next_refresh = today + REL.relativedelta(hour=12)
         if next_refresh == self.cache_check:
             return self.cached_message
 
@@ -95,11 +96,11 @@ class RegularVendor:
     def items(self):
         daily_bounties = []
         weekly_bounties = []
-        vendor = bungie_api.get_vendor(membership_type=MembershipType.STEAM,
-                                       membership_id=int(os.getenv("MEMBERSHIP_ID")),
-                                       character_id=int(os.getenv("CHARACTER_ID")), vendor_hash=self.hash_id,
-                                       components=Components.VendorSales)
-        items = vendor['sales']['data']
+        curr_vendor = bungie_api.get_vendor(membership_type=MembershipType.STEAM,
+                                            membership_id=int(os.getenv("MEMBERSHIP_ID")),
+                                            character_id=int(os.getenv("CHARACTER_ID")), vendor_hash=self.hash_id,
+                                            components=Components.VendorSales)
+        items = curr_vendor['sales']['data']
         items = list(items.values())
         for item in items:
             hash_id = item['itemHash']
