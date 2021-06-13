@@ -12,7 +12,7 @@ discord.py==1.5.1
 idna==2.10
 MarkupSafe==1.1.1
 multidict==4.7.6
-pybungie==0.6.2
+pybungie==0.6.3
 pycparser==2.20
 pyOpenSSL==20.0.1
 python-dateutil==2.8.1
