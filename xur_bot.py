@@ -21,6 +21,12 @@ Vendor_Dictionary = VendorDictionary()
 client = commands.Bot(command_prefix="!")
 
 
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("I do not understand")
+
+
 @client.command()
 async def xur(ctx):
     # Sends an embedded message containing Xur's current inventory, or if he
@@ -34,11 +40,14 @@ async def xur(ctx):
 
 
 @client.command()
-async def bounties(ctx, name: str):  # Currently still being tested
+async def bounties(ctx, *args):  # Currently still being tested
     # Sends an embedded message containing the requested vendor's bounties. If they
     # are not currently present or the user requests a unidentifiable vendor, sends a informational message
+    if len(args) == 0:
+        await ctx.send("\!bounties requires an argument '[vendor_name]', try \!bounties [vendor_name]")
+        return
     try:
-        vendor = Vendor_Dictionary.search(name=name)
+        vendor = Vendor_Dictionary.search(name=" ".join(args[:]))
         await client.wait_until_ready()
         await ctx.send(embed=vendor.message())
     except (RuntimeError, AttributeError):

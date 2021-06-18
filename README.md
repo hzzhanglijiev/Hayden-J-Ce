@@ -2,7 +2,7 @@
 Discord bot that tracks and displays [Xûr's](https://www.destinypedia.com/X%C3%BBr,_Agent_of_the_Nine) (Destiny 2) weekly rotating inventory using the [Bungie.NET API](https://bungie-net.github.io/).
 
 ## Commands
-Currently, Xûr Bot only supports one command:
+Currently, Xûr Bot supports two commands:
 * ### !inv
     * ### Xur is available
       When a user sends the message **!inv** in the discord server Xûr Bot will respond to the user with an embedded message containing the current week's inventory with links to their corresponding to their appropriate [Destiny Tracker](https://destinytracker.com) page as well as his location:
@@ -13,6 +13,11 @@ Currently, Xûr Bot only supports one command:
       In the event that Xûr is not available in-game when the command is called, Xûr Bot will send a message telling the user when he will be returning next:
       <br></br>
       ![!inv_not_available](images/!inv_not_available.PNG)
+      
+* ### !bounties [vendor name]
+  When a user sends the message **!bounties** [vendor_name] in the discord server Xûr Bot will respond to the user with an embedded message containing the names and descriptions of the current weekly and daily bounties of the requested vendor.
+  <br></br>
+  ![!bounties_response](images/!bounties.PNG)
 
 ## Events
 * #### Who/What are the Nine?

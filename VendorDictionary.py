@@ -23,6 +23,9 @@ class VendorDictionary:
                 for token in key.split():
                     self.full_vendor_dict[token] = vendor_dict[key]
 
+        self.suffixes['BANSHEE'] = self.suffixes['44']
+        self.suffixes['SAINT'] = self.suffixes['14']
+        del self.suffixes['14'], self.suffixes['44']
         self.suffixes = dict(sorted(self.suffixes.items()))
         self.prefixes = dict(sorted(self.prefixes.items()))
         self.full_vendor_dict = dict(sorted(self.full_vendor_dict.items()))

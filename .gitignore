@@ -1,3 +1,4 @@
 /.env
 /venv
 /server.pem
+/err.log
