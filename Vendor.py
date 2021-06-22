@@ -16,28 +16,12 @@ bungie_api.input_xbox_credentials(xbox_live_email=os.getenv("XBOX_LIVE_EMAIL"),
 bungie_api.start_oauth2(client_id=os.getenv("CLIENT_ID"), client_secret=os.getenv("CLIENT_SECRET"))
 
 
-def add_bounty(embed: discord.Embed, name: str, description: str, bounty_type: str):
-    embed.add_field(name=f'**{name}**', value=description, inline=True)
-    embed.add_field(name="\u200b", value="\u200b", inline=True)
-    embed.add_field(name="\u200b", value=f"\n{bounty_type}\n", inline=True)
-
-
-class Vendor:
-    """
-    Destiny 2 Vendor Class
-    """
-
-    def __new__(cls, name: str):
-        """
-        Creates an instance of a Destiny 2 vendor
-
-        :param name: The name of the vendor you want to create
-        """
-        name = name.upper()
-        if name == 'XUR':
-            return Xur(name=name)
-        else:
-            return RegularVendor(name=name)
+def Vendor(name: str):
+    name = name.upper()
+    if name == 'XUR':
+        return Xur(name=name)
+    else:
+        return RegularVendor(name=name)
 
 
 class RegularVendor:
@@ -87,16 +71,14 @@ class RegularVendor:
         embed.set_thumbnail(url=f'https://www.bungie.net/{self.icon}')
         if weekly_bounties:  # if any weekly bounties exist
             for bounty in weekly_bounties:
-                add_bounty(embed=embed,
-                           name=bounty["name"],
-                           description=bounty['description'],
-                           bounty_type="Weekly Bounty")
+                embed.add_field(name=f'**{bounty["name"]}**', value=bounty["description"], inline=True)
+                embed.add_field(name="\u200b", value="\u200b", inline=True)
+                embed.add_field(name="\u200b", value=f'\n{bounty["bountyType"]}\n', inline=True)
         if daily_bounties:  # if any daily bounties exist
             for bounty in daily_bounties:
-                add_bounty(embed=embed,
-                           name=bounty["name"],
-                           description=bounty['description'],
-                           bounty_type="Daily Bounty")
+                embed.add_field(name=f'**{bounty["name"]}**', value=bounty["description"], inline=True)
+                embed.add_field(name="\u200b", value="\u200b", inline=True)
+                embed.add_field(name="\u200b", value=f'\n{bounty["bountyType"]}\n', inline=True)
         if not daily_bounties and not weekly_bounties:
             raise RuntimeError
         self.cached_message = embed
@@ -120,7 +102,7 @@ class RegularVendor:
             if db_item:
                 bounty_dict = dict(db_item)
             else:
-                bounty = self.manifest_bounty(hash_id=hash_id)
+                bounty = bungie_api.manifest((Definitions['ITEM']).value, hash_id)
                 displayProperties = bounty['displayProperties']
                 bounty_dict = {
                     'name': displayProperties['name'],
@@ -139,9 +121,6 @@ class RegularVendor:
                 weekly_bounties.append(bounty_dict)
         db.close()
         return weekly_bounties, daily_bounties
-
-    def manifest_bounty(self, hash_id: int):
-        return bungie_api.manifest((Definitions['ITEM']).value, hash_id)
 
 
 class Xur(RegularVendor):
