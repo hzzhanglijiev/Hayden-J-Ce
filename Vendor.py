@@ -6,9 +6,11 @@ import os
 import discord
 import requests
 import sqlite3
+from dotenv import load_dotenv
 from helpers import hyperlink, Emoji
 from pybungie import BungieAPI, VendorHash, Definitions, Components, MembershipType, PlayerClass, DamageType
 
+load_dotenv()
 LOCATION_ROOT_PATH = 'https://paracausal.science/xur/current.json'  # credit to to @nev_rtheless
 bungie_api = BungieAPI(api_key=os.getenv("API_KEY"))
 bungie_api.input_xbox_credentials(xbox_live_email=os.getenv("XBOX_LIVE_EMAIL"),
@@ -69,18 +71,22 @@ class RegularVendor:
         weekly_bounties, daily_bounties = self.items()
         embed = self.create_embed_title()
         embed.set_thumbnail(url=f'https://www.bungie.net/{self.icon}')
+
         if weekly_bounties:  # if any weekly bounties exist
             for bounty in weekly_bounties:
                 embed.add_field(name=f'**{bounty["name"]}**', value=bounty["description"], inline=True)
                 embed.add_field(name="\u200b", value="\u200b", inline=True)
                 embed.add_field(name="\u200b", value=f'\n{bounty["bountyType"]}\n', inline=True)
+
         if daily_bounties:  # if any daily bounties exist
             for bounty in daily_bounties:
                 embed.add_field(name=f'**{bounty["name"]}**', value=bounty["description"], inline=True)
                 embed.add_field(name="\u200b", value="\u200b", inline=True)
                 embed.add_field(name="\u200b", value=f'\n{bounty["bountyType"]}\n', inline=True)
+
         if not daily_bounties and not weekly_bounties:
             raise RuntimeError
+
         self.cached_message = embed
         self.cache_check = today + timedelta(days=1)
         return self.cached_message
@@ -110,14 +116,14 @@ class RegularVendor:
                     'bountyType': bounty['itemTypeDisplayName'],
                     'hash': hash_id
                 }
-                if bounty_dict['bountyType'][:5] == "Daily" or bounty_dict['bountyType'][:6] == "Weekly":
+                if "Bounty" in bounty_dict['bountyType']:
                     db.execute("INSERT INTO bounties VALUES (:name, :description, :bountyType, :hash)", bounty_dict)
                     db.commit()
 
             bounty_type = bounty_dict['bountyType']
-            if bounty_type[:5] == "Daily":
+            if "Daily" in bounty_type:
                 daily_bounties.append(bounty_dict)
-            if bounty_type[:6] == "Weekly":
+            if "Weekly" in bounty_type:
                 weekly_bounties.append(bounty_dict)
         db.close()
         return weekly_bounties, daily_bounties
@@ -192,14 +198,13 @@ class Xur(RegularVendor):
         inventory = {}
         my_items = \
             bungie_api.get_public_vendors(components=Components.VendorSales)['sales']['data'][
-                str(self.hash_id.value)][
-                'saleItems']
+                str(self.hash_id.value)]['saleItems']
         db = sqlite3.connect('destiny.db')
         db.row_factory = sqlite3.Row
-        for item, count in zip(my_items,
-                               range(5)):  # For each item they're selling, find it's name, type, hash and class type
+        # For each item they're selling, find it's name, type, hash and class type
+        for item, count in zip(my_items, range(5)):
             item_hash = my_items[item]['itemHash']  # current item hash
-            if item_hash == 3875551374:
+            if item_hash == 3875551374:  # check if its an engram
                 continue
             db_item = db.execute("SELECT * FROM items WHERE hash=?", (item_hash,)).fetchone()
             if db_item:
@@ -208,22 +213,18 @@ class Xur(RegularVendor):
             else:
                 item_info = bungie_api.manifest(entity_type=(Definitions['ITEM']).value, hash_identifier=item_hash)
 
-                name = item_info['displayProperties']['name']
-                class_type = (PlayerClass(item_info['classType'])).name
-                item_type = item_info['itemTypeDisplayName']
-                damage_type = (DamageType(item_info['defaultDamageType'])).name
-
                 # create dictionary for current item
                 item_dict = {
-                    'name': name,
-                    'type': item_type,
+                    'name': item_info['displayProperties']['name'],
+                    'type': item_info['itemTypeDisplayName'],
                     'hash': item_hash,
-                    'damageType': damage_type,
-                    'classType': class_type
+                    'damageType': (DamageType(item_info['defaultDamageType'])).name,
+                    'classType': (PlayerClass(item_info['classType'])).name
                 }
+
                 db.execute("INSERT INTO items VALUES (:name, :type, :hash, :damageType, :classType)", item_dict)
                 db.commit()
-                inventory[class_type] = item_dict
+                inventory[item_dict['classType']] = item_dict
         db.close()
         return inventory
 
