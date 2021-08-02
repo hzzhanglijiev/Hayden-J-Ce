@@ -40,7 +40,7 @@ async def xur(ctx):
 
 
 @client.command()
-async def bounties(ctx, *args):  # Currently still being tested
+async def bounties(ctx, *args):
     # Sends an embedded message containing the requested vendor's bounties. If they
     # are not currently present or the user requests a unidentifiable vendor, sends a informational message
     if len(args) == 0:
